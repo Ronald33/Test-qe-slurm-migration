@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH -J test-qe
+#SBATCH --time=720:00:00
+#SBATCH -N 2
+#SBATCH --tasks-per-node=9
+#SBATCH -e output-%j.log
+#SBATCH -o output-%j.out
+
+# Cargando los modulos necesarios
+module load qe/6.7
+
+FOLDER_RESULTS="results-${SLURM_JOB_ID}"
+FOLDER_TO_PROCESS="to-process"
+mkdir $FOLDER_RESULTS
+
+# Mostrando la informacion
+echo "El directorio de trabajo es: ${SLURM_SUBMIT_DIR}"
+NOW="$(date +'%d/%m/%Y %H:%M:%S')"
+echo "El job fue lanzado a las: $NOW"
+echo "El id del job es: $SLURM_JOB_ID"
+echo "Los resultados fueron almacenados en la carpeta: $FOLDER_RESULTS"
+
+echo La version de OpenMPI es: $(mpiexec --version | head -n 1 | cut -d " " -f 3)
+
+cd $FOLDER_TO_PROCESS
+
+mpirun pw.x -input input.in > results.log
+
+mv *.log $SLURM_SUBMIT_DIR/$FOLDER_RESULTS
+mv save $SLURM_SUBMIT_DIR/$FOLDER_RESULTS
